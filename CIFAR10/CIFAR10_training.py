@@ -8,7 +8,7 @@ from PIL import Image
 from CIFAR10.CIFAR10_DCGAN import dcgan_discriminator, dcgan_generator
 from keras.models import Sequential
 from keras.optimizers import Adam
-from visualizer import *
+import math
 from constants import *
 from tqdm import tqdm
 import numpy as np
@@ -97,7 +97,6 @@ def train(model):
             # train generator
             g_loss = dcgan.train_on_batch(X_g, y_g)
             # show_progress(epoch,index,g_loss[0],d_loss[0],g_loss[1],d_loss[1])
-            image = combine_images(g.predict(z_pred))
 
         # save generated images
         image = combine_images(g.predict(z_pred))
@@ -108,6 +107,19 @@ def train(model):
         save_weights(model=model, generator=g, discriminator=d)
         print("Epoch " + str(epoch) + " completed successfully")
 
+
+def combine_images(generated_images):
+    total, width, height, channels = generated_images.shape
+    cols = int(math.sqrt(total))
+    rows = math.ceil(float(total)/cols)
+    combined_image = np.zeros((height*rows, width*cols, channels),
+                              dtype=generated_images.dtype)
+
+    for index, image in enumerate(generated_images):
+        i = int(index/cols)
+        j = index % cols
+        combined_image[width*i:width*(i+1), height*j:height*(j+1)] = image[:, :, :]
+    return combined_image
 
 if __name__ == '__main__':
     train(model=MODEL_GAN)
