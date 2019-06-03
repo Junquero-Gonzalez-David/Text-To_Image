@@ -6,6 +6,7 @@
 from keras.datasets import cifar10
 from PIL import Image
 from CIFAR10.CIFAR10_DCGAN import dcgan_discriminator, dcgan_generator
+from CIFAR10.CIFAR10_SAGAN import sagan_discriminator, sagan_generator
 from keras.models import Sequential
 from keras.optimizers import Adam
 import math
@@ -13,10 +14,12 @@ from constants import *
 from tqdm import tqdm
 import numpy as np
 
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
 
 # Training Settings
 BATCH_SIZE = 32
-NUM_EPOCH = 10
+NUM_EPOCH = 100
 LR = 0.0002  # initial learning rate
 B1 = 0.5  # momentum term
 
@@ -39,7 +42,17 @@ def load_weights(model, generator, discriminator):
         save_weights(model, generator, discriminator)
 
 
-def train(model):
+def train(model, epochs=NUM_EPOCH, batch_size=BATCH_SIZE):
+
+    NUM_EPOCH = epochs
+    BATCH_SIZE = batch_size
+
+    # Low-level TensorFlow configuration
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.log_device_placement = True
+    sess = tf.Session(config=config)
+    set_session(sess)
 
     (X_train, y_train), (X_test, y_test) = cifar10.load_data()
     X_train = (X_train.astype(np.float32) - 127.5) / 127.5
@@ -49,6 +62,9 @@ def train(model):
     if model is MODEL_DCGAN:
         g = dcgan_generator()
         d = dcgan_discriminator()
+    elif model is MODEL_SAGAN:
+        g = sagan_generator()
+        d = sagan_discriminator()
     else:
         print("Model " + model + " not implemented for the CIFAR10 dataset")
         return

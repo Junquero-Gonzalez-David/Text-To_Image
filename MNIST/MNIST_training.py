@@ -15,7 +15,7 @@ import math
 import numpy as np
 
 
-# Training Settings
+# Default Training Settings
 BATCH_SIZE = 32
 NUM_EPOCH = 100
 LR = 0.0002  # initial learning rate
@@ -40,7 +40,11 @@ def load_weights(model, generator, discriminator):
         save_weights(model, generator, discriminator)
 
 
-def train(model):
+def train(model, epochs=NUM_EPOCH, batch_size=BATCH_SIZE):
+
+    NUM_EPOCH = epochs
+    BATCH_SIZE = batch_size
+
     (X_train, y_train), (_, _) = mnist.load_data()
     # normalize images
     X_train = (X_train.astype(np.float32) - 127.5)/127.5
